@@ -21,6 +21,14 @@ Much more work would be involved in properly measuring the sentiment surrounding
 but this may be useful for someone starting out, as an idea spring board.
 I would be happy to discuss and collaborate, so contact me if this is of interest to you.
 
+## Libraries
+
+The heavy lifting is done with Stanford's CoreNLP via my NLP wrapper.
+[Core.async](https://github.com/clojure/core.async) is also used to build asynchronous pipelines,
+since under some conditions, the incoming data rate may exceed the processing chain (text -> JSON -> CoreNLP(NER/Sentiment/POS) -> Aggregation).
+Core.async makes it very easy and fun to split into separate handlers and parallelize the tasks post-HTTP.
+[clj-http](https://github.com/dakrone/clj-http) is used for the HTTP, [Cheshire](https://github.com/dakrone/cheshire) for JSON parsing, and [clj-oauth](https://github.com/mattrepl/clj-oauth) for taking care of the OAuth tasks.
+
 ## Usage
 
 **You will need OAuth credentials from Twitter for this to work.**
