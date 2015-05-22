@@ -4,6 +4,15 @@
 the public Twitter API and runs the Stanford [CoreNLP](http://nlp.stanford.edu/software/corenlp.shtml)
 NER and sentiment via my [damionjunk.nlp](https://github.com/damionjunk/damionjunk.nlp) library.
 
+Specifically, `damionjunk.sentities` consumes the Twitter [statuses](https://dev.twitter.com/streaming/reference/get/statuses/sample)
+API endpoint: `https://stream.twitter.com/1.1/statuses/sample.json`.
+According to Twitter, this stream:
+
+> Returns a small random sample of all public statuses. The Tweets returned by the default access level are the same, so if two different clients connect to this endpoint, they will see the same Tweets.
+
+This program then uses CoreNLP to detect entities and compute the sentiment score for the sentence containing the detected entities.
+The entities are then placed into a map, along with a running sum of the sentiment and total number of occurrences of this entity.
+
 ## Background
 
 This is a toy, and the scientific methodology here is severely lacking.
