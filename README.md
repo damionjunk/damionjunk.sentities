@@ -37,8 +37,7 @@ This code was created to demonstrate Twitter API use combined with entity
 detection and sentiment. `damionjunk.sentities.sentities` contains a `(comment)`
 block for REPL based exploration.
 
-I walk through this code at my [blog](http://damionjunk.com/post/) as well.
-The first post in the series can be found [here](http://damionjunk.com/post/).
+I walk through this code at my [blog](http://damionjunk.com/post/sentities/) as well.
 
 After it's been running for a while, you can dump contents of `damionjunk.sentities.work/sentities`:
 

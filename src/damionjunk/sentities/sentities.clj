@@ -125,9 +125,10 @@
   ;;
   ;; After it's been running for a while, lets look at some results:
   (let [results @swork/sentities
-        sresults (into (sorted-map-by (fn [k1 k2]
-                                        (compare [(:count (get results k1)) k1]
-                                                 [(:count (get results k2)) k2])))
+        sresults (into (sorted-map-by
+                         (fn [k1 k2]
+                           (compare [(:count (get results k1)) k1]
+                                    [(:count (get results k2)) k2])))
                        results)]
     ;; We want the top 30, sorted by :count
     (clojure.pprint/pprint (map (fn [[k {numer :sentiment denom :count}]]
