@@ -1,5 +1,7 @@
 (ns damionjunk.sentities.work
   (:require [damionjunk.nlp.stanford :as nlp]
+            [damionjunk.nlp.cmu-ark :as ark]
+            [clojure.string :as s]
             [cheshire.core :as json]
             [clojure.tools.logging :as log]
             [clojure.core.async :as async]))
@@ -7,8 +9,10 @@
 
 (defonce running? (atom true))
 
-;;
+;; Data collection atoms:
 (defonce sentities (atom {}))
+(defonce arknouns (atom {}))
+
 
 ;;
 ;; Async Processing chain:
@@ -32,6 +36,7 @@
     (when (and (not (nil? text)) (english? tweet))
       (let [smaps (nlp/sentiment-ner-maps text)]
         {:sentiment-ner smaps
+         :ark (ark/tag text)
          :uid uid
          :tid tid
          :uname uname
@@ -86,6 +91,16 @@
                             {:sentiment (:sentiment smap) :entity t}))
                         toks))))
 
+(defn nouns-filter-pred
+  "A nouns predicate that looks for CMU's POS tags that
+   indicate whether the token is a noun or not."
+  [annotation]
+  (case (:pos annotation)
+    "N" true
+    "^" true
+    "S" true
+    "Z" true
+    false))
 
 (defn start-annotated-consumers
   "Does something with the 'Annotated' tweets we've generated."
@@ -95,7 +110,13 @@
       (while @running?
         (let [adata     (async/<!! t-annotated-out-chan)
               smaps     (:sentiment-ner adata)
-              entities  (mapcat entities-mfn smaps)]
+              entities  (mapcat entities-mfn smaps)
+              anouns    (filter nouns-filter-pred (:ark adata))]
+          (doseq [an anouns]
+            ;; update the `anouns` atom/map
+            (let [noun (s/lower-case (:token an))]
+              (if (nil? (get @arknouns noun)) (swap! arknouns assoc noun 1)
+                                              (swap! arknouns update-in [noun] inc))))
           (doseq [se entities]
             ;; update the `sentities` atom/map
             (let [ek (:entity se)

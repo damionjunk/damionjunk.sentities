@@ -13,6 +13,8 @@ According to Twitter, this stream:
 This program then uses CoreNLP to detect entities and compute the sentiment score for the sentence containing the detected entities.
 The entities are then placed into a map, along with a running sum of the sentiment and total number of occurrences of this entity.
 
+The recent updates add CMU's ark-tweet-nlp to the mix. Nouns are pulled out and counted. ark-tweet-nlp does a better job with POS tagging the Twitter stream.
+
 ## Background
 
 This is a toy, and the scientific methodology here is severely lacking.
@@ -24,6 +26,7 @@ I would be happy to discuss and collaborate, so contact me if this is of interes
 ## Libraries
 
 The heavy lifting is done with Stanford's CoreNLP via my NLP wrapper.
+CMU's ark-tweet-nlp is also running behind the scenes to do Twitter specific POS tagging.
 [Core.async](https://github.com/clojure/core.async) is also used to build asynchronous pipelines,
 since under some conditions, the incoming data rate may exceed the processing chain (text -> JSON -> CoreNLP(NER/Sentiment/POS) -> Aggregation).
 Core.async makes it very easy and fun to split into separate handlers and parallelize the tasks post-HTTP.
@@ -39,7 +42,53 @@ block for REPL based exploration.
 
 I walk through this code at my [blog](http://damionjunk.com/post/sentities/) as well.
 
-After it's been running for a while, you can dump contents of `damionjunk.sentities.work/sentities`:
+You can take a look at the top nouns by examining the contents of `damionjunk.sentities.work/arknouns`:
+
+```clojure
+(let [results @swork/arknouns
+        sresults (into (sorted-map-by
+                         (fn [k1 k2]
+                           (compare [(get results k1) k1]
+                                    [(get results k2) k2])))
+                       results)]
+    (clojure.pprint/pprint (take-last 30 sresults)))
+
+;; Results =>
+;;
+
+(["harry" 36]
+ ["boys" 37]
+ ["followers" 37]
+ ["home" 37]
+ ["summer" 37]
+ ["tonight" 41]
+ ["man" 42]
+ ["everyone" 45]
+ ["game" 45]
+ ["guys" 45]
+ ["thanks" 46]
+ ["shit" 48]
+ ["twitter" 49]
+ ["way" 50]
+ ["beyoncé" 51]
+ ["minaj" 52]
+ ["world" 53]
+ ["ariana" 54]
+ ["grande" 54]
+ ["nicki" 55]
+ ["someone" 55]
+ ["girl" 58]
+ ["control" 59]
+ ["bitches" 65]
+ ["video" 65]
+ ["life" 66]
+ ["time" 98]
+ ["day" 102]
+ ["today" 123]
+ ["people" 130])
+```
+
+Similarly, you can dump contents of `damionjunk.sentities.work/sentities`:
 
 ```clojure
 (let [results @swork/sentities
@@ -57,36 +106,36 @@ After it's been running for a while, you can dump contents of `damionjunk.sentit
 ;; Results
 ;; =>
 
-({:entity "of", :sentiment 1.5, :count 16}
- {:entity "Calum", :sentiment 1.411764705882353, :count 17}
- {:entity "Duggar", :sentiment 1.117647058823529, :count 17}
- {:entity "ISIS", :sentiment 1.352941176470588, :count 17}
- {:entity "Jin", :sentiment 1.588235294117647, :count 17}
- {:entity "News", :sentiment 1.352941176470588, :count 17}
- {:entity "Alistair", :sentiment 1.0, :count 18}
- {:entity "Bill", :sentiment 1.277777777777778, :count 18}
- {:entity "Josh", :sentiment 1.222222222222222, :count 18}
- {:entity "Luke", :sentiment 1.333333333333333, :count 18}
- {:entity "Bank", :sentiment 1.157894736842105, :count 19}
- {:entity "Black", :sentiment 1.157894736842105, :count 19}
- {:entity "Curry", :sentiment 1.263157894736842, :count 19}
- {:entity "Eric", :sentiment 1.947368421052632, :count 19}
- {:entity "Niall", :sentiment 1.210526315789474, :count 19}
- {:entity "San", :sentiment 1.857142857142857, :count 21}
- {:entity "Chris", :sentiment 1.590909090909091, :count 22}
- {:entity "New", :sentiment 1.590909090909091, :count 22}
- {:entity "Sam", :sentiment 1.739130434782609, :count 23}
- {:entity "John", :sentiment 1.64, :count 25}
- {:entity "Justin", :sentiment 1.259259259259259, :count 27}
- {:entity "Obama", :sentiment 1.444444444444444, :count 27}
- {:entity "Google", :sentiment 1.25, :count 28}
- {:entity "-", :sentiment 1.4, :count 30}
- {:entity "Carmichael", :sentiment 0.96875, :count 32}
- {:entity "James", :sentiment 1.424242424242424, :count 33}
- {:entity "David", :sentiment 1.277777777777778, :count 36}
- {:entity "Michael", :sentiment 1.5625, :count 48}
- {:entity "&", :sentiment 1.225806451612903, :count 62}
- {:entity "Facebook", :sentiment 2.375, :count 72})
+({:entity "Barcelona", :sentiment 1.5, :count 6}
+ {:entity "Bieber", :sentiment 1.166666666666667, :count 6}
+ {:entity "Brown", :sentiment 1.5, :count 6}
+ {:entity "Caitlyn", :sentiment 1.0, :count 6}
+ {:entity "Curry", :sentiment 1.333333333333333, :count 6}
+ {:entity "Gaga", :sentiment 2.0, :count 6}
+ {:entity "House", :sentiment 1.166666666666667, :count 6}
+ {:entity "Lady", :sentiment 2.0, :count 6}
+ {:entity "Lauren", :sentiment 1.166666666666667, :count 6}
+ {:entity "Taylor", :sentiment 1.166666666666667, :count 6}
+ {:entity "Zayn", :sentiment 1.0, :count 6}
+ {:entity "LIAM", :sentiment 1.0, :count 7}
+ {:entity "Luke", :sentiment 1.0, :count 7}
+ {:entity "Netflix", :sentiment 1.428571428571429, :count 7}
+ {:entity "Davis", :sentiment 1.25, :count 8}
+ {:entity "Liam", :sentiment 1.0, :count 9}
+ {:entity "Chris", :sentiment 1.5, :count 10}
+ {:entity "Louis", :sentiment 1.5, :count 10}
+ {:entity "Niall", :sentiment 1.5, :count 10}
+ {:entity "Jeremy", :sentiment 1.0, :count 12}
+ {:entity "Justin", :sentiment 1.230769230769231, :count 13}
+ {:entity "London", :sentiment 1.0, :count 13}
+ {:entity "&", :sentiment 1.285714285714286, :count 14}
+ {:entity "Facebook", :sentiment 2.125, :count 16}
+ {:entity "#IChooseBEYONCE", :sentiment 1.0, :count 51}
+ {:entity "Beyoncé", :sentiment 1.0, :count 51}
+ {:entity "Grande", :sentiment 1.0, :count 52}
+ {:entity "Minaj", :sentiment 1.0, :count 52}
+ {:entity "Ariana", :sentiment 1.055555555555556, :count 54}
+ {:entity "Nicki", :sentiment 1.037037037037037, :count 54})
 ```
 
 Make any sorts of assumptions that you'd like about the results. :)

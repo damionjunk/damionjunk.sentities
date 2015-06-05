@@ -120,7 +120,7 @@
 
 
   ;; We can kill std-err if it's too annoying ...
-  ;; (log/log-capture! "")
+  (log/log-capture! "")
 
   ;;
   ;; After it's been running for a while, lets look at some results:
@@ -137,9 +137,20 @@
                                    :count denom})
                                 (take-last 30 sresults))))
 
+  ;; This time, lets look at the top nouns
+  (let [results @swork/arknouns
+        sresults (into (sorted-map-by
+                         (fn [k1 k2]
+                           (compare [(get results k1) k1]
+                                    [(get results k2) k2])))
+                       results)]
+    (clojure.pprint/pprint (take-last 30 sresults)))
+
 
   ;; Check what we've collected so far
   (clojure.pprint/pprint @swork/sentities)
+
+  (clojure.pprint/pprint @swork/arknouns)
 
 
   ;; Swap the running? atom, this will kill the web-request and stop the

@@ -9,6 +9,6 @@
                  [ch.qos.logback/logback-classic "1.1.3"]
                  [cheshire "5.4.0"]
                  [clj-oauth "1.5.2"]
-                 [damionjunk/nlp "0.2.0"]
+                 [damionjunk/nlp "0.3.0"]
                  [damionjunk/common "0.1.0"]
                  [clj-http "1.1.2"]])
